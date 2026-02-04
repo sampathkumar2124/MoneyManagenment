@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Money Manager</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+      }
+      dialog {
+        max-width: 520px;
+        width: 94%;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+      .tab-active {
+        border-bottom: 4px solid #6366f1;
+        color: #4f46e5;
+        font-weight: 700;
+        transition: all 0.2s;
+      }
+      .tab-inactive {
+        color: #64748b;
+        font-weight: 500;
+      }
+      .tab-inactive:hover {
+        color: #6366f1;
+      }
+      .card-shadow {
+        box-shadow:
+          0 10px 25px -5px rgba(99, 102, 241, 0.15),
+          0 8px 10px -6px rgba(99, 102, 241, 0.1);
+      }
+      .income-bg {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      }
+      .expense-bg {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      }
+      .btn-gradient {
+        background: linear-gradient(to right, #6366f1, #8b5cf6);
+      }
+      .btn-gradient:hover {
+        background: linear-gradient(to right, #4f46e5, #7c3aed);
+      }
+      .income-color {
+        color: #10b981;
+      }
+      .expense-color {
+        color: #e11d48;
+      }
+      .positive-balance {
+        color: #10b981;
+      }
+      .negative-balance {
+        color: #e11d48;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen pb-20">
+    <div class="container mx-auto px-4 py-10 max-w-5xl">
+      <h1
+        class="text-5xl md:text-6xl font-extrabold text-center text-indigo-700 mb-12 tracking-tight"
+      >
+        Money Manager
+      </h1>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-14">
+        <div
+          class="bg-white rounded-2xl card-shadow p-7 text-center transform hover:scale-[1.02] transition"
+        >
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">Total Income</h3>
+          <p
+            id="top-income"
+            class="text-4xl md:text-5xl font-bold income-color"
+          >
+            ₹0
+          </p>
+        </div>
+        <div
+          class="bg-white rounded-2xl card-shadow p-7 text-center transform hover:scale-[1.02] transition"
+        >
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">
+            Total Expenditure
+          </h3>
+          <p
+            id="top-expense"
+            class="text-4xl md:text-5xl font-bold expense-color"
+          >
+            ₹0
+          </p>
+        </div>
+        <div
+          class="bg-white rounded-2xl card-shadow p-7 text-center transform hover:scale-[1.02] transition"
+        >
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">
+            Total Balance
+          </h3>
+          <p id="top-balance" class="text-4xl md:text-5xl font-bold">₹0</p>
+        </div>
+      </div>
+
+      <!-- Period Tabs -->
+      <div
+        class="mb-10 flex flex-wrap justify-center gap-4 md:gap-8 border-b border-indigo-100 pb-4"
+      >
+        <button
+          id="tab-today"
+          class="pb-4 px-6 text-lg tab-inactive hover:text-indigo-600 transition"
+        >
+          Today
+        </button>
+        <button
+          id="tab-week"
+          class="pb-4 px-6 text-lg tab-active hover:text-indigo-600 transition"
+        >
+          This Week
+        </button>
+        <button
+          id="tab-month"
+          class="pb-4 px-6 text-lg tab-inactive hover:text-indigo-600 transition"
+        >
+          This Month
+        </button>
+        <button
+          id="tab-year"
+          class="pb-4 px-6 text-lg tab-inactive hover:text-indigo-600 transition"
+        >
+          This Year
+        </button>
+        <button
+          id="tab-all"
+          class="pb-4 px-6 text-lg tab-inactive hover:text-indigo-600 transition"
+        >
+          All Time
+        </button>
+      </div>
+
+      <!-- Custom Filter -->
+      <div class="mb-12 p-7 bg-white rounded-2xl card-shadow">
+        <h3 class="text-xl font-bold text-indigo-700 mb-5">Custom Filter</h3>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-end"
+        >
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >From</label
+            >
+            <input
+              type="date"
+              id="filter-from"
+              class="w-full p-3 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >To</label
+            >
+            <input
+              type="date"
+              id="filter-to"
+              class="w-full p-3 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Category</label
+            >
+            <select
+              id="filter-category"
+              class="w-full p-3 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+            >
+              <option value="">All Categories</option>
+              <option value="movie">Movie</option>
+              <option value="fuel">Fuel</option>
+              <option value="food">Food</option>
+              <option value="loan">Loan</option>
+              <option value="medical">Medical</option>
+              <option value="clothes">Clothes</option>
+              <option value="things">Things</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <div class="flex gap-4">
+            <button
+              id="apply-custom"
+              class="flex-1 btn-gradient text-white py-3 px-6 rounded-xl font-semibold shadow-md hover:shadow-lg transition"
+            >
+              Apply Filter
+            </button>
+            <button
+              id="clear-custom"
+              class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-xl font-semibold shadow-md transition"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Button -->
+      <div class="text-center mb-12">
+        <button
+          id="add-btn"
+          class="btn-gradient text-white px-12 py-5 rounded-full text-2xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300"
+        >
+          + Add Income / Expense
+        </button>
+      </div>
+
+      <!-- Transactions List -->
+      <div class="bg-white rounded-2xl card-shadow p-6 md:p-10">
+        <h2 id="history-title" class="text-3xl font-bold text-gray-800 mb-8">
+          Transactions
+        </h2>
+        <div id="history-list" class="space-y-5"></div>
+      </div>
+    </div>
+
+    <!-- Add Modal – SMALLER VERSION -->
+    <dialog
+      id="add-modal"
+      class="p-0 w-full max-w-md mx-auto rounded-2xl shadow-2xl overflow-hidden"
+    >
+      <div class="bg-gradient-to-b from-indigo-50 to-white p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-2xl font-bold text-indigo-800">New Transaction</h2>
+          <button
+            id="close-modal"
+            class="text-3xl text-gray-500 hover:text-indigo-700 transition"
+          >
+            ×
+          </button>
+        </div>
+        <div class="flex border-b border-indigo-100 mb-6">
+          <button
+            id="tab-income"
+            class="flex-1 py-3 text-base font-semibold tab-active"
+          >
+            Income
+          </button>
+          <button
+            id="tab-expense"
+            class="flex-1 py-3 text-base font-semibold tab-inactive"
+          >
+            Expense
+          </button>
+        </div>
+        <form id="transaction-form" class="space-y-5">
+          <input type="hidden" id="form-type" value="income" />
+          <div>
+            <label class="block mb-1.5 font-medium text-gray-700 text-sm"
+              >Date & Time</label
+            >
+            <input
+              type="datetime-local"
+              id="form-date"
+              required
+              class="w-full p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label class="block mb-1.5 font-medium text-gray-700 text-sm"
+              >Amount (₹)</label
+            >
+            <input
+              type="number"
+              id="form-amount"
+              min="1"
+              step="1"
+              required
+              class="w-full p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label class="block mb-1.5 font-medium text-gray-700 text-sm"
+              >Category</label
+            >
+            <select
+              id="form-category"
+              required
+              class="w-full p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="">Select category</option>
+              <option value="movie">Movie</option>
+              <option value="fuel">Fuel</option>
+              <option value="food">Food</option>
+              <option value="loan">Loan</option>
+              <option value="medical">Medical</option>
+              <option value="clothes">Clothes</option>
+              <option value="things">Things</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1.5 font-medium text-gray-700 text-sm"
+              >Description</label
+            >
+            <input
+              type="text"
+              id="form-description"
+              maxlength="120"
+              placeholder="e.g. Grocery shopping"
+              class="w-full p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label class="block mb-1.5 font-medium text-gray-700 text-sm"
+              >Division</label
+            >
+            <select
+              id="form-division"
+              required
+              class="w-full p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="Personal">Personal</option>
+              <option value="Office">Office</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="w-full btn-gradient text-white py-4 rounded-xl text-base font-bold shadow-lg hover:shadow-xl transition mt-2"
+          >
+            Save Transaction
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+    <script>
+      // Your existing JavaScript remains unchanged
+      const API_BASE = "http://localhost:5000/api/transactions";
+
+      let currentPeriod = "week";
+      let isCustomFilter = false;
+      let customStartDate = null;
+      let customEndDate = null;
+      let customCategory = null;
+
+      async function checkNegativeBalance() {
+        try {
+          const res = await fetch(`${API_BASE}/summary/lifetime`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.balance < 0) {
+            alert(
+              `⚠️ Warning: Your total balance is negative!\nCurrent deficit: ₹${Math.abs(data.balance).toLocaleString("en-IN")}`,
+            );
+          }
+        } catch {}
+      }
+
+      async function loadTopSummary() {
+        try {
+          const res = await fetch(`${API_BASE}/summary/lifetime`);
+          if (!res.ok) return;
+          const d = await res.json();
+
+          document.getElementById("top-income").textContent =
+            `₹${d.income.toLocaleString("en-IN")}`;
+          document.getElementById("top-expense").textContent =
+            `₹${d.expense.toLocaleString("en-IN")}`;
+
+          const balanceEl = document.getElementById("top-balance");
+          const balance = d.balance;
+          balanceEl.textContent = `₹${Math.abs(balance).toLocaleString("en-IN")}`;
+
+          if (balance >= 0) {
+            balanceEl.className =
+              "text-4xl md:text-5xl font-bold positive-balance";
+          } else {
+            balanceEl.className =
+              "text-4xl md:text-5xl font-bold negative-balance";
+          }
+        } catch {}
+      }
+
+      async function loadHistory() {
+        let title = "Transactions";
+        let url = API_BASE;
+
+        if (isCustomFilter && customStartDate && customEndDate) {
+          url += `?startDate=${customStartDate}&endDate=${customEndDate}`;
+          if (customCategory)
+            url += `&category=${encodeURIComponent(customCategory)}`;
+          title = `Filtered${customCategory ? ` (${customCategory})` : ""} • ${customStartDate} → ${customEndDate}`;
+        } else {
+          const now = new Date();
+          let startDate = null;
+
+          if (currentPeriod === "today") {
+            startDate = new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+            );
+            title = "Today's Transactions";
+          } else if (currentPeriod === "week") {
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - 6);
+            title = "This Week's Transactions";
+          } else if (currentPeriod === "month") {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            title = "This Month's Transactions";
+          } else if (currentPeriod === "year") {
+            startDate = new Date(now.getFullYear(), 0, 1);
+            title = "This Year's Transactions";
+          } else if (currentPeriod === "all") {
+            title = "All Transactions";
+          }
+
+          if (startDate) {
+            const startISO = startDate.toISOString().split("T")[0];
+            const endISO = now.toISOString().split("T")[0];
+            url += `?startDate=${startISO}&endDate=${endISO}`;
+          }
+        }
+
+        document.getElementById("history-title").textContent = title;
+
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error();
+          const transactions = await res.json();
+
+          const list = document.getElementById("history-list");
+          list.innerHTML = "";
+
+          if (transactions.length === 0) {
+            list.innerHTML =
+              '<p class="text-center py-16 text-gray-500 text-lg">No transactions found in this view</p>';
+            return;
+          }
+
+          transactions.forEach((t) => {
+            const item = document.createElement("div");
+            item.className = `p-5 rounded-xl border-l-5 flex justify-between items-center ${t.type === "income" ? "income-bg" : "expense-bg"}`;
+            item.innerHTML = `
+              <div>
+                <div class="font-semibold text-lg">${t.description || t.category || "—"}</div>
+                <div class="text-sm text-gray-600 mt-1">
+                  ${new Date(t.date).toLocaleString("en-IN")} • ${t.division || "—"} • ${t.category || "—"}
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-extrabold text-2xl ${t.type === "income" ? "text-emerald-700" : "text-rose-700"}">
+                  ${t.type === "income" ? "+" : "−"} ₹${t.amount.toLocaleString("en-IN")}
+                </div>
+              </div>
+            `;
+            list.appendChild(item);
+          });
+        } catch {
+          document.getElementById("history-list").innerHTML =
+            '<p class="text-center py-16 text-rose-600 text-lg">Error loading transactions</p>';
+        }
+      }
+
+      document.getElementById("transaction-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const payload = {
+          type: document.getElementById("form-type").value,
+          amount: Number(document.getElementById("form-amount").value),
+          category: document.getElementById("form-category").value,
+          description: document.getElementById("form-description").value.trim(),
+          division: document.getElementById("form-division").value,
+          date: document.getElementById("form-date").value,
+        };
+
+        try {
+          const res = await fetch(API_BASE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error((await res.json()).message || "Failed");
+          document.getElementById("add-modal").close();
+          document.getElementById("transaction-form").reset();
+          await loadTopSummary();
+          await loadHistory();
+          alert("Transaction saved successfully!");
+        } catch (err) {
+          alert("Error: " + err.message);
+        }
+      };
+
+      function setPeriod(period) {
+        currentPeriod = period;
+        isCustomFilter = false;
+        customStartDate = customEndDate = customCategory = null;
+
+        document.querySelectorAll('[id^="tab-"]').forEach((btn) => {
+          btn.classList.remove("tab-active");
+          btn.classList.add("tab-inactive");
+        });
+        document.getElementById(`tab-${period}`).classList.add("tab-active");
+        document
+          .getElementById(`tab-${period}`)
+          .classList.remove("tab-inactive");
+
+        loadHistory();
+      }
+
+      document.getElementById("tab-today").onclick = () => setPeriod("today");
+      document.getElementById("tab-week").onclick = () => setPeriod("week");
+      document.getElementById("tab-month").onclick = () => setPeriod("month");
+      document.getElementById("tab-year").onclick = () => setPeriod("year");
+      document.getElementById("tab-all").onclick = () => setPeriod("all");
+
+      document.getElementById("apply-custom").onclick = () => {
+        const from = document.getElementById("filter-from").value;
+        const to = document.getElementById("filter-to").value;
+        const cat = document.getElementById("filter-category").value;
+
+        if (!from || !to) {
+          alert("Please select both From and To dates.");
+          return;
+        }
+
+        customStartDate = from;
+        customEndDate = to;
+        customCategory = cat || null;
+        isCustomFilter = true;
+        loadHistory();
+      };
+
+      document.getElementById("clear-custom").onclick = () => {
+        document.getElementById("filter-from").value = "";
+        document.getElementById("filter-to").value = "";
+        document.getElementById("filter-category").value = "";
+        isCustomFilter = false;
+        customStartDate = customEndDate = customCategory = null;
+        loadHistory();
+      };
+
+      document.getElementById("tab-income").onclick = () => {
+        document.getElementById("form-type").value = "income";
+        document.getElementById("tab-income").classList.add("tab-active");
+        document.getElementById("tab-expense").classList.remove("tab-active");
+      };
+
+      document.getElementById("tab-expense").onclick = () => {
+        document.getElementById("form-type").value = "expense";
+        document.getElementById("tab-expense").classList.add("tab-active");
+        document.getElementById("tab-income").classList.remove("tab-active");
+      };
+
+      const modal = document.getElementById("add-modal");
+      document.getElementById("add-btn").onclick = () => modal.showModal();
+      document.getElementById("close-modal").onclick = () => modal.close();
+
+      // Initial load
+      loadTopSummary();
+      checkNegativeBalance();
+      setPeriod("week");
+    </script>
+  </body>
+</html>
